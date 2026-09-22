@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quiz — Cadre d'usage de l'IA en éducation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1E2A24;
+    --paper: #FBF9F4;
+    --paper-2: #F2EFE6;
+    --line: #DCD6C6;
+    --accent: #2E6F4E;
+    --accent-bg: #E7F1EA;
+    --wrong: #A23A34;
+    --wrong-bg: #F6E7E5;
+    --muted: #6B6558;
+    --card: #FFFFFF;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #EDE8DD;
+      --paper: #17140F;
+      --paper-2: #211C15;
+      --line: #3A3428;
+      --accent-bg: #1D2E24;
+      --wrong-bg: #301E1B;
+      --muted: #A69E8C;
+      --card: #1F1B14;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #EDE8DD;
+    --paper: #17140F;
+    --paper-2: #211C15;
+    --line: #3A3428;
+    --accent-bg: #1D2E24;
+    --wrong-bg: #301E1B;
+    --muted: #A69E8C;
+    --card: #1F1B14;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Work Sans', system-ui, sans-serif;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 40px 24px 72px;
+  }
+
+  header.top {
+    border-bottom: 3px solid var(--ink);
+    padding-bottom: 22px;
+    margin-bottom: 28px;
+  }
+  .kicker {
+    font-size: 12.5px;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+    margin: 0 0 8px;
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(26px, 5.5vw, 34px);
+    line-height: 1.12;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+  .lede {
+    font-size: 15px;
+    color: var(--muted);
+    margin: 0;
+    max-width: 56ch;
+  }
+
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 26px;
+  }
+  .progress-track {
+    flex: 1;
+    height: 6px;
+    background: var(--paper-2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width .35s ease;
+  }
+  .progress-label {
+    font-size: 13px;
+    color: var(--muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 26px 24px;
+  }
+
+  .q-theme {
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    color: var(--accent);
+    font-weight: 600;
+    margin: 0 0 10px;
+  }
+  .q-text {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 19px;
+    line-height: 1.4;
+    margin: 0 0 20px;
+  }
+
+  .options { display: grid; gap: 10px; margin-bottom: 22px; }
+  .opt {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    text-align: left;
+    width: 100%;
+    padding: 13px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 5px;
+    background: transparent;
+    color: var(--ink);
+    font-family: 'Work Sans', sans-serif;
+    font-size: 14.5px;
+    line-height: 1.45;
+    cursor: pointer;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .opt:hover:not(:disabled) { border-color: var(--accent); }
+  .opt .tag {
+    flex: 0 0 auto;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: var(--muted);
+  }
+  .opt.selected { border-color: var(--accent); background: var(--accent-bg); }
+  .opt.selected .tag { border-color: var(--accent); color: var(--accent); background: var(--card); }
+  .opt.correct { border-color: var(--accent); background: var(--accent-bg); }
+  .opt.correct .tag { border-color: var(--accent); background: var(--accent); color: #fff; }
+  .opt.incorrect { border-color: var(--wrong); background: var(--wrong-bg); }
+  .opt.incorrect .tag { border-color: var(--wrong); background: var(--wrong); color: #fff; }
+  .opt:disabled { cursor: default; }
+
+  .feedback {
+    display: none;
+    margin-top: -6px;
+    margin-bottom: 20px;
+  }
+  .feedback.show { display: block; }
+  .fb-item {
+    padding: 12px 14px;
+    border-left: 3px solid var(--line);
+    margin-bottom: 8px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    background: var(--paper-2);
+    border-radius: 0 4px 4px 0;
+  }
+  .fb-item.correct-fb { border-left-color: var(--accent); }
+  .fb-item.wrong-fb { border-left-color: var(--wrong); }
+  .fb-item .fb-label { font-weight: 700; margin-right: 4px; }
+  .fb-item.correct-fb .fb-label { color: var(--accent); }
+  .fb-item.wrong-fb .fb-label { color: var(--wrong); }
+  .fb-item cite {
+    display: block;
+    font-style: normal;
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  .actions { display: flex; justify-content: flex-end; gap: 10px; }
+  button.btn {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 11px 22px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    background: var(--ink);
+    color: var(--paper);
+    transition: opacity .15s ease, transform .1s ease;
+  }
+  button.btn:disabled { opacity: .35; cursor: not-allowed; }
+  button.btn:not(:disabled):active { transform: scale(.98); }
+  button.btn.ghost {
+    background: transparent;
+    color: var(--ink);
+    border: 1.5px solid var(--line);
+  }
+
+  /* Start / results screens */
+  .center-card { text-align: center; padding: 40px 28px; }
+  .center-card p { color: var(--muted); font-size: 15px; line-height: 1.6; }
+
+  .score-badge {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 48px;
+    padding: 18px 30px;
+    border-radius: 8px;
+    margin: 18px 0 8px;
+  }
+  .score-badge small { font-family: 'Work Sans', sans-serif; font-size: 16px; font-weight: 600; opacity: .75; }
+  .score-good  { background: var(--accent-bg); color: var(--accent); }
+  .score-mid   { background: #F7EEDD; color: #B0721F; }
+  :root[data-theme="dark"] .score-mid { background: #2E2513; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .score-mid { background: #2E2513; } }
+  .score-low   { background: var(--wrong-bg); color: var(--wrong); }
+
+  .score-verdict { font-family: 'Work Sans', sans-serif; font-size: 15px; font-weight: 600; margin-bottom: 24px; }
+
+  .review-list { text-align: left; margin: 0 0 28px; }
+  .review-title { font-size: 13px; font-weight: 700; letter-spacing: 0.02em; color: var(--muted); margin-bottom: 10px; }
+  .review-item {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 10px 0; border-top: 1px solid var(--line);
+    font-size: 14px; line-height: 1.5;
+  }
+  .review-item:first-child { border-top: none; }
+  .review-dot { flex: 0 0 auto; width: 7px; height: 7px; border-radius: 50%; background: var(--wrong); margin-top: 6px; }
+
+  footer.note {
+    margin-top: 28px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <p class="kicker">Formation IA — niveau 2 · d'après « L'IA en éducation, cadre d'usage » (juin 2025)</p>
+    <h1>Quiz : le cadre d'usage de l'IA</h1>
+    <p class="lede">5 questions tirées au sort parmi 20, centrées sur les tâches de direction et l'enseignement en école primaire.</p>
+  </header>
+
+  <div id="app"></div>
+
+  <footer class="note">Chaque question renvoie à un extrait précis du document « L'IA en éducation — cadre d'usage », juin 2025.</footer>
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    theme: "Protection des données",
+    q: "Selon le document, quelles données peuvent être saisies dans un outil d'IA accessible au grand public ?",
+    options: [
+      "Uniquement des données anonymisées par la direction académique",
+      "Des données qui peuvent être rendues publiques (textes et programmes officiels, ressources éducatives libres, données statistiques anonymisées, œuvres du domaine public)",
+      "Toute donnée, dès lors que l'enseignant reste responsable de son usage",
+      "Aucune donnée : l'usage de l'IA est interdit dans les outils grand public"
+    ],
+    correct: 1,
+    feedback: [
+      "Le document ne réserve pas cette évaluation à la direction académique ; il définit lui-même la catégorie de données autorisées.",
+      "C'est le texte exact du cadre : « ne peuvent ainsi être saisies dans de tels outils que des données qui peuvent être rendues publiques ».",
+      "La responsabilité de l'enseignant n'autorise pas à saisir n'importe quelle donnée : le critère posé par le document est la nature publique de la donnée, pas la seule vigilance de l'agent.",
+      "Le document autorise l'usage des IA grand public sous réserve du respect de ce critère : ce n'est donc pas une interdiction totale."
+    ],
+    cite: "p. 8 — « Obligations légales » (Protection des données)"
+  },
+  {
+    theme: "Protection des données",
+    q: "D'après le cadre, que ne doit jamais demander un membre du personnel aux élèves ?",
+    options: [
+      "De consulter un site institutionnel sur l'IA",
+      "De participer à un débat sur l'intelligence artificielle",
+      "D'utiliser un service d'IA grand public impliquant la création d'un compte personnel",
+      "De relire un texte généré par IA"
+    ],
+    correct: 2,
+    feedback: [
+      "Consulter un site institutionnel n'est pas visé par cette interdiction.",
+      "Un débat en classe n'implique pas la création d'un compte et n'est pas concerné par cette règle.",
+      "Le document est explicite : « Aucun membre du personnel ne doit demander aux élèves d'utiliser des services d'IA grand public impliquant la création d'un compte personnel. »",
+      "Relire un texte déjà généré, sans créer de compte, n'est pas ce que cette phrase du cadre interdit."
+    ],
+    cite: "p. 8 — « Obligations légales » (Protection des données)"
+  },
+  {
+    theme: "Cadre pédagogique premier degré",
+    q: "Concernant les élèves du premier degré (école primaire), que prévoit le document ?",
+    options: [
+      "Ils peuvent utiliser une IA générative en autonomie dès le CE2",
+      "Ils sont sensibilisés aux connaissances de base sur les IA, mais sans manipuler directement des services d'IA générative",
+      "Ils doivent attendre le collège pour toute forme de sensibilisation à l'IA",
+      "Ils peuvent manipuler une IA générative uniquement lors du conseil des maîtres"
+    ],
+    correct: 1,
+    feedback: [
+      "L'autonomie d'usage n'est jamais mentionnée pour le premier degré : le document réserve l'usage encadré par les élèves à partir de la 4e.",
+      "C'est la formulation du document, reprise à deux endroits : sensibilisation aux connaissances de base, sans manipulation directe d'IA générative.",
+      "Le document indique au contraire que la sensibilisation commence dès le premier degré, pas qu'elle est reportée au collège.",
+      "Le conseil des maîtres est une instance de pilotage pédagogique, pas un lieu de manipulation d'IA par les élèves — cette option n'a aucun fondement dans le texte."
+    ],
+    cite: "p. 9-10 « Recommandations éthiques et déontologiques » et p. 13 « En pédagogie »"
+  },
+  {
+    theme: "Rôle du directeur d'école",
+    q: "Qui accompagne l'enseignant, selon le document, lorsqu'il sensibilise ses élèves à l'IA ou propose des séquences pédagogiques qui l'intègrent ?",
+    options: [
+      "Uniquement les corps d'inspection",
+      "Le directeur d'école, le chef d'établissement et les corps d'inspection, dans le cadre de leurs missions respectives",
+      "La CNIL",
+      "Le conseil pédagogique exclusivement"
+    ],
+    correct: 1,
+    feedback: [
+      "Les corps d'inspection sont cités, mais pas seuls.",
+      "Le document nomme précisément ces trois accompagnateurs : « Avec l'accompagnement du directeur d'école, du chef d'établissement et des corps d'inspection (dans le cadre de leurs missions respectives) ».",
+      "La CNIL est citée dans le document pour le cadre juridique des données, pas comme accompagnatrice pédagogique de l'enseignant.",
+      "Le conseil pédagogique apparaît ailleurs, à propos des devoirs et de l'évaluation, pas ici."
+    ],
+    cite: "p. 10 — « Recommandations éthiques et déontologiques »"
+  },
+  {
+    theme: "Usage pédagogique par l'enseignant",
+    q: "Pour ses tâches pédagogiques (préparation de cours, évaluation, correction), que peut faire un enseignant selon le cadre ?",
+    options: [
+      "Utiliser des IA accessibles au grand public sous sa responsabilité, à condition de vérifier et croiser les productions avec d'autres sources",
+      "Utiliser uniquement des IA validées nommément par le ministère",
+      "Déléguer intégralement la correction à l'IA dès lors que les copies sont anonymisées",
+      "Utiliser l'IA sans restriction particulière, ces règles ne visant que les personnels administratifs"
+    ],
+    correct: 0,
+    feedback: [
+      "C'est exactement ce que prévoit le texte : usage autorisé « sous sa responsabilité », avec vérification et croisement des sources.",
+      "Le document ne mentionne aucune liste d'IA validées par le ministère.",
+      "Le document parle d'assistance à la correction, jamais de délégation intégrale, quel que soit le degré d'anonymisation.",
+      "Le document précise au contraire que ces règles de vigilance s'appliquent à l'ensemble des personnels, pas aux seuls administratifs."
+    ],
+    cite: "p. 10 — « Recommandations éthiques et déontologiques »"
+  },
+  {
+    theme: "Tâches administratives",
+    q: "À qui les règles de contrôle, d'esprit critique et de vigilance dans l'usage de l'IA s'appliquent-elles, selon le document ?",
+    options: [
+      "Uniquement aux enseignants",
+      "Uniquement aux personnels de direction",
+      "À l'ensemble des personnels exerçant dans un établissement scolaire, notamment pour les tâches administratives",
+      "Uniquement aux personnels ayant suivi une formation certifiante sur l'IA"
+    ],
+    correct: 2,
+    feedback: [
+      "Le document élargit explicitement cette règle au-delà des seuls enseignants.",
+      "Les personnels de direction sont concernés, mais pas seuls.",
+      "Citation exacte : « ces règles de contrôle, d'esprit critique et de vigilance s'appliquent à l'ensemble des personnels exerçant dans un établissement scolaire, notamment pour les tâches administratives ».",
+      "Aucune formation certifiante préalable n'est posée comme condition dans le document."
+    ],
+    cite: "p. 10 — « Recommandations éthiques et déontologiques »"
+  },
+  {
+    theme: "Devoirs et évaluation",
+    q: "Selon le document, quelles instances doivent s'emparer de la question des devoirs et de l'évaluation face à la réalité des usages de l'IA par les élèves ?",
+    options: [
+      "Le conseil des maîtres et le conseil pédagogique, ainsi que les autres instances compétentes",
+      "Uniquement la direction académique",
+      "Le seul conseil d'école",
+      "Uniquement les familles, via le conseil d'école"
+    ],
+    correct: 0,
+    feedback: [
+      "Le document cite précisément ces instances : « le conseil des maîtres et le conseil pédagogique (et autres instances compétentes) s'emparent de cette question ».",
+      "La direction académique n'est pas mentionnée à cet endroit du document.",
+      "Le conseil d'école n'est pas l'instance citée ici ; c'est le conseil des maîtres qui l'est pour le premier degré.",
+      "Les familles ne sont pas mentionnées comme pilotes de cette adaptation dans le document."
+    ],
+    cite: "p. 10-11 — « Devoirs et évaluations »"
+  },
+  {
+    theme: "Devoirs et évaluation",
+    q: "Que dit le document sur les logiciels de détection de contenus générés par l'IA ?",
+    options: [
+      "Leur usage est fortement recommandé pour objectiver les soupçons de fraude",
+      "Leur usage n'est pas recommandé, en raison de leur manque de fiabilité, car ils pourraient pénaliser à tort un élève",
+      "Leur usage est obligatoire avant toute sanction disciplinaire",
+      "Le document ne mentionne pas ce type de logiciels"
+    ],
+    correct: 1,
+    feedback: [
+      "C'est l'inverse de ce que dit le texte, qui déconseille leur usage.",
+      "Citation exacte : « l'utilisation des logiciels de détection de contenus générés par l'IA n'est pas recommandée, car elle pourrait pénaliser à tort un élève ».",
+      "Aucune obligation de ce type n'est formulée ; le document va au contraire dans le sens inverse.",
+      "Le document consacre un « point de vigilance » spécifique à ce sujet."
+    ],
+    cite: "p. 10-11 — « Devoirs et évaluations »"
+  },
+  {
+    theme: "Définitions de l'IA",
+    q: "Qu'est-ce qui distingue une « IA générative » d'une « IA prédictive », selon les définitions du document ?",
+    options: [
+      "L'IA générative classe des données ou anticipe des événements, tendances ou risques",
+      "L'IA générative produit des contenus (texte, image, son, vidéo), quand l'IA prédictive classifie des données ou anticipe des événements, tendances ou risques",
+      "L'IA générative repose sur des règles logiques explicitement décrites par l'humain",
+      "Le document emploie les deux termes de façon interchangeable, sans les distinguer"
+    ],
+    correct: 1,
+    feedback: [
+      "C'est la définition donnée pour l'IA prédictive, pas pour l'IA générative.",
+      "Le document distingue clairement les deux : l'IA prédictive « classifie des données ou anticipe des événements, tendances ou risques », l'IA générative « produit des contenus ».",
+      "Cette description correspond aux « systèmes experts », explicitement exclus du champ de ce document.",
+      "Le document consacre au contraire un paragraphe entier à distinguer ces deux notions."
+    ],
+    cite: "p. 4-5 — « Qu'est-ce que l'IA ? »"
+  },
+  {
+    theme: "Définitions de l'IA",
+    q: "Un « système expert » relève-t-il du champ couvert par ce cadre d'usage ?",
+    options: [
+      "Oui, car c'est la forme la plus répandue d'IA générative",
+      "Non, car il repose sur des algorithmes déterministes fondés sur des règles logiques explicites, et non sur une logique probabiliste",
+      "Oui, mais seulement lorsqu'il sert à évaluer des élèves",
+      "Le document ne se prononce pas sur les systèmes experts"
+    ],
+    correct: 1,
+    feedback: [
+      "Le document dit l'inverse : les systèmes experts ne sont pas concernés par ce document.",
+      "Citation exacte : ils « reposent en effet sur des algorithmes déterministes, construits à partir d'un ensemble de règles logiques décrites explicitement par l'humain [...]. Ces systèmes ne se fondent pas sur une logique probabiliste. »",
+      "Aucune exception de ce type n'est mentionnée : l'exclusion posée par le document est générale.",
+      "Le document leur consacre au contraire un paragraphe explicite dans ses définitions."
+    ],
+    cite: "p. 4-5 — « Qu'est-ce que l'IA ? »"
+  },
+  {
+    theme: "Usages observés",
+    q: "Parmi les usages déjà observés chez les « cadres et personnels administratifs », que mentionne le document ?",
+    options: [
+      "La notation automatique des élèves",
+      "La rédaction de notes, de courriers, la transcription de réunion, la synthèse ou le compte rendu, la traduction, l'automatisation de tâches",
+      "La détection automatisée de la fraude aux devoirs",
+      "La surveillance des examens"
+    ],
+    correct: 1,
+    feedback: [
+      "La notation des élèves n'est pas listée parmi les usages administratifs décrits par le document.",
+      "C'est la liste précise donnée par le document pour les cadres et personnels administratifs.",
+      "Ce n'est pas un usage administratif cité ; le document déconseille d'ailleurs les logiciels de détection de fraude.",
+      "La surveillance d'examens n'apparaît pas dans cette liste, qui porte sur des tâches de rédaction et d'organisation."
+    ],
+    cite: "p. 5 — « Des usages en pleine explosion ouvrant de nombreuses potentialités »"
+  },
+  {
+    theme: "Principes généraux",
+    q: "Quel principe encadre la place de l'IA par rapport à l'expertise professionnelle des personnels ?",
+    options: [
+      "L'IA doit progressivement remplacer les tâches jugées répétitives",
+      "L'IA peut assister l'expertise professionnelle des personnels, mais ne doit jamais la remplacer",
+      "L'IA doit être utilisée en priorité, avant toute solution non numérique",
+      "L'IA n'a pas vocation à intervenir dans les pratiques professionnelles des personnels"
+    ],
+    correct: 1,
+    feedback: [
+      "Aucune logique de remplacement progressif n'est posée par le document.",
+      "Citation exacte : l'IA doit s'appuyer « sur l'expertise professionnelle des personnels qu'elle peut assister, mais jamais remplacer ».",
+      "C'est l'inverse du principe de frugalité posé par ailleurs, qui privilégie la solution la moins coûteuse.",
+      "Le document reconnaît au contraire un rôle d'assistance possible de l'IA dans les pratiques professionnelles."
+    ],
+    cite: "p. 8 — « Objectifs et principes généraux »"
+  },
+  {
+    theme: "Impact environnemental",
+    q: "Que recommande le document en matière d'impact environnemental de l'IA ?",
+    options: [
+      "L'usage frugal de l'IA est à privilégier ; elle ne doit être utilisée que si aucune autre solution moins coûteuse écologiquement ne répond de façon satisfaisante au besoin",
+      "L'impact environnemental de l'IA est jugé négligeable et n'est pas abordé par le cadre",
+      "L'IA doit être utilisée systématiquement dès lors qu'elle fait gagner du temps, indépendamment du coût écologique",
+      "Seuls les élèves doivent être sensibilisés à cet impact, pas les personnels"
+    ],
+    correct: 0,
+    feedback: [
+      "C'est la formulation retenue par le document sur l'usage frugal.",
+      "Le document consacre au contraire plusieurs passages, dont une note chiffrée, à cet impact.",
+      "C'est l'inverse du principe de frugalité mis en avant par le texte.",
+      "Le document rattache cette vigilance à l'éducation au développement durable, sans la réserver aux élèves."
+    ],
+    cite: "p. 8 — « Objectifs et principes généraux »"
+  },
+  {
+    theme: "Impact environnemental",
+    q: "Selon le document, une réponse textuelle générée par une IA à un prompt consomme en moyenne...",
+    options: [
+      "Autant d'énergie qu'une requête sur un moteur de recherche",
+      "Deux fois plus d'énergie qu'une requête sur un moteur de recherche",
+      "En moyenne 10 fois plus d'énergie qu'une requête sur un moteur de recherche",
+      "Moins d'énergie qu'une requête sur un moteur de recherche"
+    ],
+    correct: 2,
+    feedback: [
+      "Le document donne un ordre de grandeur bien supérieur à l'équivalence.",
+      "Le chiffre donné par le document est plus élevé que cette estimation.",
+      "C'est le chiffre exact donné en note : une réponse textuelle est « en moyenne 10 fois plus énergivore qu'une requête sur un moteur de recherche ».",
+      "C'est l'inverse de ce qu'indique le document, qui souligne le coût plus élevé de l'IA générative."
+    ],
+    cite: "p. 6, note de bas de page 1"
+  },
+  {
+    theme: "Devoirs et évaluation",
+    q: "Quelle est la conséquence, selon le document, de l'utilisation d'une IA générative pour réaliser tout ou partie d'un devoir scolaire sans autorisation explicite de l'enseignant et sans travail personnel d'appropriation ?",
+    options: [
+      "Cela reste un usage libre, tant que l'outil utilisé est mentionné en bibliographie",
+      "Cela constitue une fraude, assimilée à l'intervention d'une tierce personne ou à la reproduction non signalée de contenus existants",
+      "Cela n'est sanctionné qu'à partir du lycée",
+      "Cela relève uniquement d'une question pédagogique, sans conséquence prévue par le document"
+    ],
+    correct: 1,
+    feedback: [
+      "Aucune exception liée à une citation en bibliographie n'est prévue par le document.",
+      "Citation exacte : cet usage « constitue une fraude. Elle est assimilée, à ce titre, à l'intervention d'une tierce personne ou à la reproduction non signalée de contenus existants. »",
+      "Le document ne réserve pas cette règle à un niveau scolaire particulier.",
+      "Le document qualifie explicitement cela de fraude, ce qui dépasse la seule question pédagogique."
+    ],
+    cite: "p. 10-11 — « Devoirs et évaluations »"
+  },
+  {
+    theme: "Usage pédagogique par l'enseignant",
+    q: "D'après le document, quand une IA générative doit-elle être mobilisée en contexte pédagogique ?",
+    options: [
+      "Systématiquement, pour gagner du temps de préparation",
+      "Uniquement lorsqu'une plus-value pédagogique est avérée",
+      "Dès que les élèves en font la demande",
+      "Uniquement pendant les heures dédiées à l'éducation aux médias"
+    ],
+    correct: 1,
+    feedback: [
+      "Le gain de temps seul n'est pas le critère retenu par le document.",
+      "C'est la formulation exacte du document : « N'utilisez l'IA que lorsqu'une plus-value pédagogique est avérée. »",
+      "La demande des élèves n'est pas mentionnée comme critère de décision.",
+      "Le document ne restreint pas cet usage à un créneau horaire particulier."
+    ],
+    cite: "p. 13 — « En pédagogie »"
+  },
+  {
+    theme: "Devoirs et évaluation",
+    q: "Que doivent mettre « au premier plan » les enseignants lorsqu'ils adaptent devoirs et modalités d'évaluation face aux usages de l'IA, selon le document ?",
+    options: [
+      "La rapidité de correction",
+      "Le raisonnement et la résolution de problème",
+      "La restitution mémorisée de connaissances",
+      "La notation chiffrée systématique"
+    ],
+    correct: 1,
+    feedback: [
+      "La rapidité de correction n'est pas le critère mis en avant par le document à cet endroit.",
+      "C'est la formulation exacte : « mettez au premier plan le raisonnement et la résolution de problème ».",
+      "C'est plutôt l'inverse : le document invite à s'éloigner de la seule restitution mémorisée, plus facilement contournable par l'IA.",
+      "Aucune préconisation de ce type sur la notation chiffrée n'apparaît dans le document."
+    ],
+    cite: "p. 13 — « En pédagogie »"
+  },
+  {
+    theme: "Transparence",
+    q: "Que doit faire un agent lorsqu'une décision est prise à l'aide d'une IA à partir de données personnelles ?",
+    options: [
+      "Aucune information particulière n'est requise si la décision reste interne à l'établissement",
+      "Informer les personnes concernées, en leur expliquant leurs droits et en leur permettant d'agir en cas de désaccord",
+      "Informer uniquement la CNIL, sans en informer les personnes concernées",
+      "Attendre une demande explicite de la famille pour communiquer sur l'usage de l'IA"
+    ],
+    correct: 1,
+    feedback: [
+      "Le document ne prévoit aucune exception liée au caractère interne de la décision.",
+      "C'est la formulation du document : information des personnes concernées, explication de leurs droits, possibilité d'agir en cas de désaccord.",
+      "La CNIL n'est pas le seul destinataire prévu par le document : ce sont d'abord les personnes concernées qui doivent être informées.",
+      "Le document impose une information explicite, pas une communication seulement réactive à une demande."
+    ],
+    cite: "p. 9 — « Transparence »"
+  },
+  {
+    theme: "Principes généraux",
+    q: "Lequel de ces principes fait partie des « Valeurs et principes » encadrant l'usage de l'IA à l'École, selon le document ?",
+    options: [
+      "L'usage de l'IA prime sur le principe de liberté pédagogique",
+      "Les usages de l'IA doivent se faire dans le respect des valeurs de l'École de la République, des objectifs du service public d'éducation et du principe de liberté pédagogique",
+      "La liberté pédagogique est suspendue dès lors qu'un outil d'IA est mobilisé",
+      "Le document ne mentionne pas la liberté pédagogique"
+    ],
+    correct: 1,
+    feedback: [
+      "C'est l'inverse : le document place ces usages sous le respect de ce principe, pas au-dessus.",
+      "C'est la formulation exacte du document dans ses « Valeurs et principes ».",
+      "Aucune suspension de ce type n'est prévue par le texte.",
+      "Le principe de liberté pédagogique est cité explicitement, dès l'ouverture du cadre d'usage."
+    ],
+    cite: "p. 8 — « Objectifs et principes généraux »"
+  },
+  {
+    theme: "Esprit critique",
+    q: "Selon la synthèse « À retenir », que doit faire un utilisateur qui ne peut pas évaluer un résultat produit par une IA en matière d'exactitude factuelle, de pertinence des références citées et d'impartialité du point de vue ?",
+    options: [
+      "Publier le résultat en le signalant comme généré par IA, sans autre vérification",
+      "Renoncer à l'IA dans ce cas",
+      "Faire valider le résultat par les élèves eux-mêmes",
+      "Utiliser malgré tout le résultat, l'IA étant réputée fiable sur les faits"
+    ],
+    correct: 1,
+    feedback: [
+      "Le seul signalement de l'origine IA ne suffit pas selon le document lorsqu'on ne peut pas évaluer la fiabilité du résultat.",
+      "C'est la recommandation exacte : « Renoncez à l'IA si vous ne pouvez pas évaluer le résultat [...]. »",
+      "Cette option n'est pas envisagée par le document, qui s'adresse à l'utilisateur adulte responsable de l'usage.",
+      "Le document rappelle au contraire les risques d'inexactitudes et de biais des IA génératives."
+    ],
+    cite: "p. 13 — « Exercez votre esprit critique »"
+  }
+];
+
+const SESSION_SIZE = 5;
+
+let session = [];
+let current = 0;
+let selectedIndex = null;
+let validated = false;
+let score = 0;
+let missedThemes = [];
+
+const app = document.getElementById('app');
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startSession() {
+  session = shuffle(QUESTIONS).slice(0, SESSION_SIZE);
+  current = 0;
+  score = 0;
+  missedThemes = [];
+  renderQuestion();
+}
+
+function renderIntro() {
+  app.innerHTML = `
+    <div class="card center-card">
+      <p class="q-theme" style="text-align:center;">${QUESTIONS.length} questions au total</p>
+      <h2 class="q-text" style="text-align:center;">Prêt·e pour la séance ?</h2>
+      <p>À chaque lancement, 5 questions sont tirées au sort parmi les 20. Sélectionnez une réponse puis validez pour découvrir le feedback détaillé, sourcé dans le document.</p>
+      <div class="actions" style="justify-content:center; margin-top:18px;">
+        <button class="btn" id="start-btn">Commencer la séance</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('start-btn').addEventListener('click', startSession);
+}
+
+function renderQuestion() {
+  selectedIndex = null;
+  validated = false;
+  const item = session[current];
+  const pct = Math.round((current / SESSION_SIZE) * 100);
+
+  app.innerHTML = `
+    <div class="progress-row">
+      <span class="progress-label">Question ${current + 1} / ${SESSION_SIZE}</span>
+      <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="card">
+      <p class="q-theme">${item.theme}</p>
+      <p class="q-text">${item.q}</p>
+      <div class="options" id="options"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="actions">
+        <button class="btn" id="validate-btn" disabled>Valider</button>
+      </div>
+    </div>
+  `;
+
+  const optionsEl = document.getElementById('options');
+  const letters = ['A', 'B', 'C', 'D'];
+  item.options.forEach((optText, idx) => {
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.type = 'button';
+    b.innerHTML = `<span class="tag">${letters[idx]}</span><span>${optText}</span>`;
+    b.addEventListener('click', () => selectOption(idx));
+    optionsEl.appendChild(b);
+  });
+}
+
+function selectOption(idx) {
+  if (validated) return;
+  selectedIndex = idx;
+  document.querySelectorAll('.opt').forEach((el, i) => {
+    el.classList.toggle('selected', i === idx);
+  });
+  document.getElementById('validate-btn').disabled = false;
+}
+
+function validateAnswer() {
+  if (selectedIndex === null || validated) return;
+  validated = true;
+  const item = session[current];
+  const correctIdx = item.correct;
+  const letters = ['A', 'B', 'C', 'D'];
+
+  if (selectedIndex === correctIdx) {
+    score++;
+  } else {
+    missedThemes.push(item.theme);
+  }
+
+  const optEls = document.querySelectorAll('.opt');
+  optEls.forEach((el, i) => {
+    el.disabled = true;
+    if (i === correctIdx) el.classList.add('correct');
+    else if (i === selectedIndex) el.classList.add('incorrect');
+  });
+
+  const fb = document.getElementById('feedback');
+  fb.classList.add('show');
+  fb.innerHTML = item.options.map((optText, i) => {
+    const isCorrect = i === correctIdx;
+    return `<div class="fb-item ${isCorrect ? 'correct-fb' : 'wrong-fb'}">
+      <span class="fb-label">${letters[i]} — ${isCorrect ? 'Correct.' : 'Incorrect.'}</span>${item.feedback[i]}
+      <cite>${item.cite}</cite>
+    </div>`;
+  }).join('');
+
+  const actions = document.querySelector('.actions');
+  actions.innerHTML = `<button class="btn" id="next-btn">${current + 1 < SESSION_SIZE ? 'Question suivante' : 'Voir le bilan'}</button>`;
+  document.getElementById('next-btn').addEventListener('click', () => {
+    if (current + 1 < SESSION_SIZE) {
+      current++;
+      renderQuestion();
+    } else {
+      renderResults();
+    }
+  });
+}
+
+function renderResults() {
+  let scoreClass, verdict;
+  if (score >= 4) { scoreClass = 'score-good'; verdict = 'Maîtrise solide du cadre d\'usage.'; }
+  else if (score >= 2) { scoreClass = 'score-mid'; verdict = 'Bonnes bases, une relecture ciblée est utile.'; }
+  else { scoreClass = 'score-low'; verdict = 'Une relecture du document est recommandée avant de le présenter.'; }
+
+  const uniqueMissed = [...new Set(missedThemes)];
+  const reviewHtml = uniqueMissed.length
+    ? `<div class="review-list">
+        <p class="review-title">Points à retravailler</p>
+        ${uniqueMissed.map(t => `<div class="review-item"><span class="review-dot"></span><span>${t}</span></div>`).join('')}
+      </div>`
+    : `<div class="review-list">
+        <p class="review-title">Points à retravailler</p>
+        <div class="review-item"><span class="review-dot" style="background:var(--accent);"></span><span>Aucun — toutes les réponses de cette séance sont correctes.</span></div>
+      </div>`;
+
+  app.innerHTML = `
+    <div class="card center-card">
+      <p class="q-theme" style="text-align:center;">Bilan de la séance</p>
+      <div class="score-badge ${scoreClass}">${score}<small>/ ${SESSION_SIZE}</small></div>
+      <p class="score-verdict">${verdict}</p>
+      ${reviewHtml}
+      <div class="actions" style="justify-content:center;">
+        <button class="btn ghost" id="restart-btn">Refaire une séance</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('restart-btn').addEventListener('click', startSession);
+}
+
+app.addEventListener('click', (e) => {
+  if (e.target && e.target.id === 'validate-btn') validateAnswer();
+});
+
+renderIntro();
+</script>
+</body>
+</html>
